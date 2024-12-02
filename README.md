@@ -57,7 +57,9 @@ python --version
 pip install -r requirements.txt
 ```
 ## Crie um arquivo .env no diretório do projeto com o seguinte conteúdo:
+```bash
 OPENAI_API_KEY=sua_chave_aqui
+```
 
 ## 🚀 Como Executar o Projeto
 
@@ -84,8 +86,12 @@ streamlit run app.py
    - Gráfico de pizza com a proporção entre ganhos e gastos.
 
 ## 🛡️ Licença
-Este projeto está licenciado sob a MIT License. 
-Veja mais detalhes no arquivo LICENSE.
+Este trabalho está licenciado sob a Licença Creative Commons Attribution-NonCommercial 4.0 International.
+Você pode usar, modificar e compartilhar este projeto apenas para fins não comerciais.
+
+Para mais detalhes, consulte a licença completa:
+https://creativecommons.org/licenses/by-nc/4.0/legalcode
+
 
 ## ✨ Autor
 Criado por Ariel S. Entre em contato para dúvidas ou colaborações!
