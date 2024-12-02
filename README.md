@@ -33,7 +33,7 @@ Um aplicativo interativo para ajudar no controle de finanças pessoais. Registre
 ├── .env                   # Variáveis de ambiente (API Key)
 ├── requirements.txt       # Dependências do projeto
 └── README.md              # Documentação do projeto
-
+```
 ---
 
 ## 🛠️ Tecnologias Utilizadas
@@ -56,7 +56,7 @@ python --version
 # Instale as dependências do projeto.
 pip install -r requirements.txt
 ```
-# Crie um arquivo dotenv.env no diretório do projeto com o seguinte conteúdo:
+## Crie um arquivo .env no diretório do projeto com o seguinte conteúdo:
 OPENAI_API_KEY=sua_chave_aqui
 
 ## 🚀 Como Executar o Projeto
@@ -72,3 +72,20 @@ pip install -r requirements.txt
 # Execute o aplicativo Streamlit
 streamlit run app.py
 ```
+
+## 📊 Relatórios Disponíveis
+1. Resumo Financeiro:
+   - Total de ganhos, gastos e saldo atual.
+
+2. Evolução Financeira:
+   - Gráfico de linha mostrando a evolução de ganhos e gastos ao longo do tempo.
+
+3. Distribuição de Ganhos e Gastos:
+   - Gráfico de pizza com a proporção entre ganhos e gastos.
+
+## 🛡️ Licença
+Este projeto está licenciado sob a MIT License. 
+Veja mais detalhes no arquivo LICENSE.
+
+## ✨ Autor
+Criado por Ariel S. Entre em contato para dúvidas ou colaborações!
