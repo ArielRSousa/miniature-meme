@@ -24,6 +24,36 @@ transacoes_df = carregar_dados()
 categorias_padrao = ['Salário', 'Investimentos', 'Lazer', 'Saúde', 'Educação', 'Transporte', 'Alimentação', 'Outros']
 todas_categorias = list(set(categorias_padrao + transacoes_df['Categoria'].dropna().unique().tolist()))
 
+
+def gerar_contexto_financeiro(transacoes_filtradas):
+    """
+    Gera um resumo do contexto financeiro com base nas transações filtradas.
+
+    Args:
+        transacoes_filtradas (DataFrame): Transações atuais do usuário.
+
+    Returns:
+        str: Resumo do contexto financeiro.
+    """
+    total_ganhos = calcular_total(transacoes_filtradas, 'Ganho')
+    total_gastos = calcular_total(transacoes_filtradas, 'Gasto')
+    saldo_atual = total_ganhos - total_gastos
+
+    categorias = transacoes_filtradas.groupby('Categoria')['Valor'].sum().reset_index()
+
+    resumo_categorias = "\n".join(
+        [f"{row['Categoria']}: R$ {row['Valor']:.2f}" for _, row in categorias.iterrows()]
+    )
+
+    contexto = (
+        f"Saldo Atual: R$ {saldo_atual:.2f}\n"
+        f"Total de Ganhos: R$ {total_ganhos:.2f}\n"
+        f"Total de Gastos: R$ {total_gastos:.2f}\n"
+        f"Gastos por Categoria:\n{resumo_categorias}"
+    )
+    return contexto
+
+
 st.title('💰 Gerenciador Financeiro Pessoal')
 
 with st.sidebar:
@@ -51,6 +81,7 @@ with st.sidebar:
         else:
             st.error('Por favor, preencha todos os campos corretamente.')
 
+
 with st.sidebar:
     st.header('🤖 Chatbot Financeiro')
     st.write("Pergunte sobre suas finanças pessoais!")
@@ -59,11 +90,15 @@ with st.sidebar:
 
     if st.button('Perguntar'):
         if pergunta:
+            contexto_financeiro = gerar_contexto_financeiro(transacoes_df)
+            contexto_financeiro += "\nPor favor, responda sempre em português e de forma natural para obter melhores resultados e muito cuidado em ser prolixo e repetir a mesma coisa duas vezes"
             with st.spinner('Pensando...'):
-                resposta = chat_ollama_stream(pergunta)
-            st.write('**Resposta:**', resposta)
+                resposta = chat_ollama_stream(pergunta, contexto_financeiro)
+            st.write('**Resposta:**')
+            st.text_area("", resposta, height=200)
         else:
             st.error('Por favor, digite uma pergunta.')
+
 
 with st.sidebar:
     st.header('Remover Transação')

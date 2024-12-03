@@ -1,1 +1,8 @@
 ID,Data,Tipo,Descrição,Valor,Categoria,Resumo
+1,2024-12-04,Ganho,Salario empresa,4000.0,Salário,
+2,2024-12-06,Ganho,Vendas de Sacolé,400.0,Salário,
+3,2024-12-06,Gasto,Aluguel,1300.0,Saúde,
+4,2024-12-06,Gasto,Conta de Água ,200.0,Saúde,
+5,2024-12-06,Gasto,Conta de Luz,200.0,Saúde,
+6,2024-12-06,Gasto,Conta de Luz,700.0,Lazer,
+7,2024-12-06,Gasto,Alimentação ,1300.0,Alimentação,

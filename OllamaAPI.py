@@ -1,14 +1,14 @@
 import requests
 import json
 
-def chat_ollama_stream(prompt, model="llama2:latest", max_tokens=200, temperature=0.7):
+def chat_ollama_stream(prompt, context_data, model="llama2:latest", max_tokens=200, temperature=0.7):
     """
-    Envia uma solicitação ao modelo via API Ollama usando o endpoint /api/generate.
-    Retorna uma resposta formatada em tempo real para o app principal.
+    Envia uma solicitação ao modelo via API Ollama com contexto adicional.
 
     Args:
         prompt (str): Pergunta ou comando enviado ao modelo.
-        model (str): Nome do modelo. Padrão é 'llama2:latest'.
+        context_data (str): Contexto financeiro do usuário.
+        model (str): Nome do modelo.
         max_tokens (int): Máximo de tokens na resposta.
         temperature (float): Aleatoriedade das respostas.
 
@@ -16,9 +16,10 @@ def chat_ollama_stream(prompt, model="llama2:latest", max_tokens=200, temperatur
         str: Resposta gerada pelo modelo.
     """
     url = "http://localhost:11434/api/generate"
+    full_prompt = f"Contexto Financeiro: {context_data}\nPergunta: {prompt}"
     payload = {
         "model": model,
-        "prompt": prompt,
+        "prompt": full_prompt,
         "max_tokens": max_tokens,
         "temperature": temperature,
         "stream": True  # Habilita o streaming
@@ -33,9 +34,8 @@ def chat_ollama_stream(prompt, model="llama2:latest", max_tokens=200, temperatur
             if chunk:
                 data = chunk.decode("utf-8")
                 try:
-                    chunk_data = json.loads(data)  # Converte o JSON em um dicionário
+                    chunk_data = json.loads(data)
                     if "response" in chunk_data:
-                        # Concatena a resposta progressivamente
                         response_text += chunk_data["response"]
                     if chunk_data.get("done", False):
                         break
