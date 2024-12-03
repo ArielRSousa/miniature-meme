@@ -6,12 +6,11 @@ from data import carregar_dados, salvar_dados, registrar_transacao, remover_tran
 from business_rules import validar_gasto
 from utils import calcular_total
 from dotenv import load_dotenv
+from OllamaAPI import chat_ollama_stream
 
-# Carregar variáveis de ambiente
 load_dotenv()
 
 
-# Configuração do tema do Streamlit
 st.set_page_config(
     page_title='Gerenciador Financeiro',
     page_icon='💰',
@@ -20,16 +19,13 @@ st.set_page_config(
 )
 
 
-# Carregar dados
 transacoes_df = carregar_dados()
 
-# Listas de categorias
 categorias_padrao = ['Salário', 'Investimentos', 'Lazer', 'Saúde', 'Educação', 'Transporte', 'Alimentação', 'Outros']
 todas_categorias = list(set(categorias_padrao + transacoes_df['Categoria'].dropna().unique().tolist()))
 
 st.title('💰 Gerenciador Financeiro Pessoal')
 
-# Seção para registrar transações
 with st.sidebar:
     st.header('Registrar Nova Transação')   
     tipo = st.selectbox('Tipo', ['Ganho', 'Gasto'])
@@ -37,7 +33,6 @@ with st.sidebar:
     valor = st.number_input('Valor', min_value=0.01, format="%.2f")
     data = st.date_input('Data', datetime.now())
 
-    # Seleção ou criação de categoria
     categoria_existente = st.selectbox('Categoria', ['Outros'] + todas_categorias)
     if categoria_existente == 'Outros':
         nova_categoria = st.text_input('Nova Categoria (opcional)')
@@ -47,7 +42,6 @@ with st.sidebar:
 
     if st.button('Adicionar'):
         if descricao and valor and categoria:
-            # Verificar se o tipo é 'Gasto' e se o saldo é suficiente
             if tipo == 'Gasto' and not validar_gasto(transacoes_df, valor):
                 st.error('Saldo insuficiente para registrar este gasto.')
             else:
@@ -57,16 +51,23 @@ with st.sidebar:
         else:
             st.error('Por favor, preencha todos os campos corretamente.')
 
-# Chatbot
 with st.sidebar:
-    st.header('Chatbot')
-    st.write('Em breve...')
+    st.header('🤖 Chatbot Financeiro')
+    st.write("Pergunte sobre suas finanças pessoais!")
 
-# Seção para remover transações
+    pergunta = st.text_input('Digite sua pergunta:')
+
+    if st.button('Perguntar'):
+        if pergunta:
+            with st.spinner('Pensando...'):
+                resposta = chat_ollama_stream(pergunta)
+            st.write('**Resposta:**', resposta)
+        else:
+            st.error('Por favor, digite uma pergunta.')
+
 with st.sidebar:
     st.header('Remover Transação')
     if not transacoes_df.empty:
-        # Criar uma exibição mais detalhada para selecionar o item a ser removido
         transacoes_df['Resumo'] = transacoes_df.apply(
             lambda row: f"ID: {row['ID']} | {row['Tipo']} - {row['Descrição']} (R$ {row['Valor']:.2f}) em {row['Data'].strftime('%d/%m/%Y')}",
             axis=1
@@ -76,7 +77,6 @@ with st.sidebar:
             options=transacoes_df['Resumo']
         )
 
-        # Extrair o ID da transação selecionada
         id_para_remover = int(id_selecionado.split('|')[0].replace("ID: ", "").strip())
 
         if st.button('Remover Transação'):
@@ -86,7 +86,6 @@ with st.sidebar:
     else:
         st.write('Não há transações para remover.')
 
-# Filtros
 st.header('Filtros')
 col_filtro1, col_filtro2, col_filtro3 = st.columns(3)
 with col_filtro1:
@@ -94,7 +93,6 @@ with col_filtro1:
 with col_filtro2:
     categorias_selecionadas = st.multiselect('Categorias', options=todas_categorias)
 with col_filtro3:
-    # Definir valores padrão para data_inicial e data_final
     if not transacoes_df.empty and transacoes_df['Data'].notnull().all():
         min_data = transacoes_df['Data'].min()
         max_data = transacoes_df['Data'].max()
@@ -104,11 +102,9 @@ with col_filtro3:
     data_inicial = st.date_input('Data Inicial', value=min_data.date())
     data_final = st.date_input('Data Final', value=max_data.date())
 
-    # Converter para Timestamp
     data_inicial = pd.Timestamp(data_inicial)
     data_final = pd.Timestamp(data_final)
 
-# Aplicar filtros
 if not tipos_selecionados:
     tipos_selecionados = transacoes_df['Tipo'].unique().tolist()
 
@@ -122,7 +118,6 @@ transacoes_filtradas = transacoes_df[
     (transacoes_df['Data'] <= data_final)
 ]
 
-# Exibir somatórios
 st.markdown('## Resumo Financeiro')
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -135,7 +130,6 @@ with col3:
     saldo_atual = total_ganhos - total_gastos
     st.metric('🏦 Saldo Atual', f'R$ {saldo_atual:.2f}')
 
-# Opção para Escolher o Tipo de Dashboard
 st.markdown('## Escolha o Tipo de Dashboard')
 dashboard_opcao = st.selectbox(
     'Selecione o tipo de Dashboard que deseja visualizar:',
@@ -149,9 +143,7 @@ dashboard_opcao = st.selectbox(
     ]
 )
 
-# Inserir gráficos baseados na opção selecionada
 if dashboard_opcao == 'Comparação de Ganhos e Gastos por Categoria':
-    # Gráfico de Barras Empilhadas: Comparação de Ganhos e Gastos por Categoria
     st.markdown('### Comparação de Ganhos e Gastos por Categoria')
 
     stacked_bar_data = transacoes_filtradas.groupby(['Categoria', 'Tipo'])['Valor'].sum().reset_index()
@@ -171,7 +163,6 @@ if dashboard_opcao == 'Comparação de Ganhos e Gastos por Categoria':
     st.plotly_chart(fig_stacked_bar, use_container_width=True)
 
 elif dashboard_opcao == 'Saldo Acumulado ao Longo do Tempo':
-    # Gráfico de Área: Saldo Acumulado ao Longo do Tempo
     st.markdown('### Evolução do Saldo Acumulado')
 
     area_data = transacoes_filtradas.copy()
@@ -192,13 +183,10 @@ elif dashboard_opcao == 'Saldo Acumulado ao Longo do Tempo':
     st.plotly_chart(fig_area, use_container_width=True)
 
 elif dashboard_opcao == 'Distribuição de Gastos por Categoria':
-    # Gráfico de Pizza: Distribuição de Ganhos e Gastos
     st.markdown('### Distribuição de Ganhos e Gastos')
 
-    # Agrupar dados por "Tipo" (Ganho/Gasto)
     pie_data = transacoes_filtradas.groupby('Tipo')['Valor'].sum().reset_index()
 
-    # Criar o gráfico de pizza
     fig_pie = px.pie(
         pie_data,
         names='Tipo',
@@ -213,7 +201,6 @@ elif dashboard_opcao == 'Distribuição de Gastos por Categoria':
 
 
 elif dashboard_opcao == 'Evolução dos Ganhos e Gastos Mensais':
-    # Gráfico de Linhas: Evolução dos Ganhos e Gastos Mensais (corrigido para evitar erro de Period)
     st.markdown('### Evolução dos Ganhos e Gastos Mensais')
 
     line_data = transacoes_filtradas.copy()
@@ -235,7 +222,6 @@ elif dashboard_opcao == 'Evolução dos Ganhos e Gastos Mensais':
     st.plotly_chart(fig_line, use_container_width=True)
 
 elif dashboard_opcao == 'Top 10 Despesas e Receitas':
-    # Gráfico de Barras Horizontais: Maiores Despesas e Receitas
     st.markdown('### Maiores Despesas e Receitas')
 
     top_transacoes = transacoes_filtradas.groupby(['Descrição', 'Tipo'])['Valor'].sum().reset_index()
@@ -256,7 +242,6 @@ elif dashboard_opcao == 'Top 10 Despesas e Receitas':
     st.plotly_chart(fig_bar_horizontal, use_container_width=True)
 
 elif dashboard_opcao == 'Concentração de Despesas/Ganhos por Dia da Semana e Mês':
-    # Gráfico de Calor: Concentração de Despesas/Ganhos por Dia da Semana e Mês
     st.markdown('### Concentração de Despesas/Ganhos por Dia da Semana e Mês')
 
     heatmap_data = transacoes_filtradas.copy()
